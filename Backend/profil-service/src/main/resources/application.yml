@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: profil-service
+
+  # Config Server (optionnel : le service démarre même s'il est absent)
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/tacautac_profil?serverTimezone=UTC
+    username: ${MYSQL_USER:profil_user}
+    password: ${MYSQL_PASSWORD:profil_pwd}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  mvc:
+    problemdetails:
+      enabled: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: profil-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/tacautac}
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  security:
+    # false tant que Keycloak n'est pas branché (S8) ; true ensuite
+    enabled: ${SECURITY_ENABLED:false}
+  kafka:
+    topic-niveau-estime: niveau.estime.maj
+  seed:
+    enabled: ${SEED_ENABLED:true}
