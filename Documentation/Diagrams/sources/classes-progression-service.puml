@@ -1,0 +1,65 @@
+@startuml classes-progression-service
+!include style.iuml
+title MS5 progression-service : modèle de données (MySQL · tacautac_progression)
+
+package "progression-service" {
+  class SuiviApprenant <<Entity>> {
+    - id : Long
+    {field} - apprenantId : String  <i>(réf. MS1, unique)</i>
+    - langue : Langue
+    - niveauCible : NiveauCecrl
+    - niveauEstime : NiveauCecrl
+    - nbSeances : Integer
+    - derniereActivite : LocalDateTime
+  }
+  class HistoriqueScore <<Entity>> {
+    - id : Long
+    {field} - analyseId : String  <i>(unique : idempotence)</i>
+    {field} - enregistrementId : Long  <i>(réf. MS3)</i>
+    - source : SourceScore
+    - niveauSujet : NiveauCecrl
+    - date : LocalDateTime
+    - prononciation : Double
+    - fluidite : Double
+    - intonation : Double
+    - lexique : Double
+    - grammaire : Double
+    - coherence : Double
+    - scoreGlobal : Double
+    - valideParFormateur : boolean
+  }
+  class Alerte <<Entity>> {
+    - id : Long
+    - type : TypeAlerte
+    - message : String
+    - date : LocalDateTime
+    - traitee : boolean
+  }
+  enum SourceScore {
+    ENTRAINEMENT
+    EXAMEN
+  }
+  enum TypeAlerte {
+    BAISSE_SCORE
+    INACTIVITE
+    NIVEAU_ATTEINT
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+}
+
+SuiviApprenant "1" *-right- "0..*" HistoriqueScore : historique >
+SuiviApprenant "1" *-down- "0..*" Alerte : alertes >
+Alerte -[hidden]right- SourceScore
+SourceScore -[hidden]right- TypeAlerte
+TypeAlerte -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+@enduml

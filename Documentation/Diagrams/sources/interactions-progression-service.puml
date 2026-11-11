@@ -1,0 +1,36 @@
+@startuml interactions-progression-service
+!include style.iuml
+left to right direction
+skinparam rectangle {
+  BorderColor #B00020
+  BackgroundColor #FFFFFF
+  FontStyle bold
+}
+skinparam queue {
+  BorderColor #C2410C
+  BackgroundColor #FFF4EC
+  FontColor #9A3412
+}
+title MS5 progression-service : interactions
+rectangle "MS5\nprogression-service" as S #FBE9EB
+rectangle "Frontend, via la Gateway" as N0 #F4F6F8
+N0 --> S : tous les endpoints
+rectangle "MS1 profil-service" as N1 #FFFFFF
+S --> N1 : GET /api/groupes/{id}/membres
+queue "analyse.terminee" as T0
+T0 ..> S #C2410C : consomme
+queue "analyse.validee" as T1
+T1 ..> S #C2410C : consomme
+queue "examen.termine" as T2
+T2 ..> S #C2410C : consomme
+queue "enregistrement.supprime" as T3
+T3 ..> S #C2410C : consomme
+queue "niveau.estime.maj" as T4
+S ..> T4 #C2410C : publie
+queue "alerte.creee" as T5
+S ..> T5 #C2410C : publie
+legend right
+  flèche pleine : appel synchrone (REST, OpenFeign via Eureka)
+  flèche pointillée : événement Kafka (asynchrone)
+endlegend
+@enduml
