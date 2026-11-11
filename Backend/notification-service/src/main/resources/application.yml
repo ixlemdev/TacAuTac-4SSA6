@@ -1,0 +1,43 @@
+# MS6 notification-service : configuration locale.
+# Les valeurs ${VAR:defaut} sont lues depuis l'environnement (Docker) ; sinon la valeur par défaut sert en local.
+server:
+  port: 8086
+
+spring:
+  application:
+    name: notification-service
+  config:
+    # "optional:" : le service démarre même si le Config Server n'est pas lancé
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/tacautac_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: false
+  mail:                       # Mailpit en démonstration
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+
+eureka:
+  client:
+    enabled: ${EUREKA_ENABLED:true}   # EUREKA_ENABLED=false pour lancer le service seul
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
