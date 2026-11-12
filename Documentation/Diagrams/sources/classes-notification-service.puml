@@ -1,0 +1,72 @@
+@startuml classes-notification-service
+!include style.iuml
+title MS6 notification-service : modèle de données (MySQL · tacautac_notification)
+
+package "notification-service" {
+  class Notification <<Entity>> {
+    - id : Long
+    {field} - destinataireId : String  <i>(sub Keycloak, réf. MS1)</i>
+    - type : TypeNotification
+    - titre : String
+    - message : String
+    {field} - lien : String  <i>(page du Frontend)</i>
+    {field} - evenementSource : String  <i>(unique avec destinataireId)</i>
+    - lue : boolean
+    - dateCreation : LocalDateTime
+    - dateLecture : LocalDateTime
+  }
+
+  class EnvoiEmail <<Entity>> {
+    - id : Long
+    - statut : StatutEnvoi
+    {field} - tentatives : Integer  <i>(3 au maximum)</i>
+    - dernierEssai : LocalDateTime
+    - erreur : String
+  }
+
+  class PreferenceNotification <<Entity>> {
+    - id : Long
+    {field} - utilisateurId : String  <i>(unique)</i>
+    - emailActif : boolean
+    - tempsReelActif : boolean
+    - typesDesactives : Set<TypeNotification>
+  }
+
+  class RappelEntrainement <<Entity>> {
+    - id : Long
+    {field} - apprenantId : String  <i>(unique)</i>
+    - jours : Set<DayOfWeek>
+    - heure : LocalTime
+    - actif : boolean
+    - derniereActivite : LocalDateTime
+    - dernierEnvoi : LocalDateTime
+  }
+
+  enum TypeNotification {
+    FEEDBACK_PRET
+    ANALYSE_ECHOUEE
+    NOTE_VALIDEE
+    EPREUVE_TERMINEE
+    NIVEAU_ATTEINT
+    ALERTE_APPRENANT
+    RAPPEL_ENTRAINEMENT
+  }
+  enum StatutEnvoi {
+    EN_ATTENTE
+    ENVOYE
+    ECHEC
+  }
+}
+
+Notification "1" -right- "0..1" EnvoiEmail : donne lieu à >
+Notification -[hidden]down- PreferenceNotification
+PreferenceNotification -[hidden]right- RappelEntrainement
+PreferenceNotification -[hidden]down- TypeNotification
+TypeNotification -[hidden]right- StatutEnvoi
+
+note right of EnvoiEmail
+  Écrit dans la même transaction que la
+  notification, puis envoyé par une tâche
+  planifiée qui retente en cas d'échec.
+end note
+@enduml
