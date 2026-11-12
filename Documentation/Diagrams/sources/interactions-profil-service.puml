@@ -1,0 +1,32 @@
+@startuml interactions-profil-service
+!include style.iuml
+left to right direction
+skinparam rectangle {
+  BorderColor #B00020
+  BackgroundColor #FFFFFF
+  FontStyle bold
+}
+skinparam queue {
+  BorderColor #C2410C
+  BackgroundColor #FFF4EC
+  FontColor #9A3412
+}
+title MS1 profil-service : interactions
+rectangle "MS1\nprofil-service" as S #FBE9EB
+rectangle "MS3 seance-service" as N0 #FFFFFF
+N0 --> S : GET /api/profils/{id}
+N0 --> S : GET /api/groupes?formateurId=&membreId=
+rectangle "MS4 examen-service" as N1 #FFFFFF
+N1 --> S : GET /api/profils/{id}
+rectangle "MS5 progression-service" as N2 #FFFFFF
+N2 --> S : GET /api/groupes/{id}/membres
+rectangle "MS6 notification-service" as N3 #FFFFFF
+N3 --> S : GET /api/profils/{id}
+N3 --> S : GET /api/groupes?membreId=
+queue "niveau.estime.maj" as T0
+T0 ..> S #C2410C : consomme
+legend right
+  flèche pleine : appel synchrone (REST, OpenFeign via Eureka)
+  flèche pointillée : événement Kafka (asynchrone)
+endlegend
+@enduml
