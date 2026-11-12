@@ -1,0 +1,15 @@
+# Tests : sans Eureka ni Config Server
+spring:
+  application:
+    name: analyse-service
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/tacautac_analyse_test   # la connexion est paresseuse : MongoDB peut être arrêté
+eureka:
+  client:
+    enabled: false

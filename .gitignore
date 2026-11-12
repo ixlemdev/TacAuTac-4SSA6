@@ -17,3 +17,6 @@ data/
 # Python (moteur-ia)
 __pycache__/
 .venv/
+
+# macOS
+.DS_Store
