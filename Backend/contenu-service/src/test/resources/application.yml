@@ -1,0 +1,19 @@
+# Tests : base H2 en mémoire, sans Eureka ni Config Server (MySQL n'a pas besoin d'être lancé)
+spring:
+  application:
+    name: contenu-service
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+  datasource:
+    url: jdbc:h2:mem:contenu_test;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+eureka:
+  client:
+    enabled: false

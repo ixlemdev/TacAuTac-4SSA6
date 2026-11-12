@@ -1,0 +1,79 @@
+@startuml classes-contenu-service
+!include style.iuml
+title MS2 contenu-service : modèle de données (MySQL · tacautac_contenu)
+
+package "contenu-service" {
+  class Sujet <<Entity>> {
+    - id : Long
+    - titre : String
+    - langue : Langue
+    - niveau : NiveauCecrl
+    - typeTache : TypeTache
+    - certification : String
+    - consigne : String
+    - documentDeclencheur : String
+    - tempsPreparationSec : Integer
+    - tempsParoleSec : Integer
+    {field} - actif : boolean  <i>(archivage au lieu de suppression)</i>
+    {field} - formateurId : String  <i>(auteur, réf. MS1)</i>
+  }
+  class QuestionRelance <<Entity>> {
+    - id : Long
+    - texte : String
+    - ordre : Integer
+  }
+  class Parcours <<Entity>> {
+    - id : Long
+    - titre : String
+    - langue : Langue
+    - niveauCible : NiveauCecrl
+    {field} - formateurId : String  <i>(réf. MS1)</i>
+  }
+  class ModuleParcours <<Entity>> {
+    - id : Long
+    - titre : String
+    - ordre : Integer
+  }
+  class Exercice <<Entity>> {
+    - id : Long
+    - titre : String
+    - critereCible : Critere
+    - ordre : Integer
+  }
+  enum TypeTache {
+    ENTRETIEN_DIRIGE
+    MONOLOGUE_SUIVI
+    JEU_DE_ROLE
+    EXPOSE
+    DEBAT
+    SYNTHESE_DOCUMENTS
+  }
+  enum Critere {
+    PRONONCIATION
+    FLUIDITE
+    INTONATION
+    LEXIQUE
+    GRAMMAIRE
+    COHERENCE
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+}
+
+Sujet "1" *-down- "0..*" QuestionRelance : relances >
+Parcours "1" *-down- "1..*" ModuleParcours : contient >
+ModuleParcours "1" *-down- "1..*" Exercice : contient >
+Exercice "0..*" -left-> "1" Sujet : s'appuie sur >
+QuestionRelance -[hidden]down- TypeTache
+TypeTache -[hidden]right- Critere
+Critere -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+@enduml
