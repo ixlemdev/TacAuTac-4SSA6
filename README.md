@@ -8,7 +8,7 @@ L'oral est la compétence la plus déterminante aux examens de langue, et la moi
 
 **Tac au Tac** fait parler l'apprenant depuis son navigateur, analyse chaque prise de parole par intelligence artificielle (transcription, prononciation, fluidité, intonation, lexique, grammaire, cohérence) et le prépare, niveau par niveau, aux certifications orales (DELF, DALF, TCF, Cambridge, IELTS, TOEFL). Le formateur suit ses groupes et garde la décision finale sur les notes.
 
-Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est prévenu en temps réel dès que son feedback est prêt et peut programmer des rappels d'entraînement. Les fonctionnalités sont décrites par 17 user stories dans le [dossier technique](Documentation/Dossier_Technique_TacAuTac.md#25-user-stories).
+Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est prévenu en temps réel dès que son feedback est prêt et peut programmer des rappels d'entraînement. Les fonctionnalités sont décrites par 17 user stories dans le [dossier technique](Documentation/Dossier_Technique_TacAuTac.docx#25-user-stories).
 
 ## Membres
 
