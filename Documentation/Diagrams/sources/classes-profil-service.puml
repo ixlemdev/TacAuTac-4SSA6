@@ -1,0 +1,53 @@
+@startuml classes-profil-service
+!include style.iuml
+title MS1 profil-service : modèle de données (MySQL · tacautac_profil)
+
+package "profil-service" {
+  class Profil <<Entity>> {
+    {field} - id : String  <i>(sub Keycloak = identifiant partout)</i>
+    - nom : String
+    - prenom : String
+    - email : String
+    {field} - role : RoleMetier  <i>(copie du rôle Keycloak)</i>
+    - langueCible : Langue
+    - niveauCible : NiveauCecrl
+    {field} - niveauActuel : NiveauCecrl  <i>(copie locale, source : MS5)</i>
+    - certificationVisee : String
+    - consentementVocal : boolean
+    - dateConsentement : LocalDateTime
+  }
+  class Groupe <<Entity>> {
+    - id : Long
+    - nom : String
+    - langue : Langue
+    - niveau : NiveauCecrl
+    {field} - formateurId : String  <i>(id d'un Profil FORMATEUR)</i>
+  }
+  class Etablissement <<Entity>> {
+    - id : Long
+    - nom : String
+    - ville : String
+  }
+  enum RoleMetier {
+    APPRENANT
+    FORMATEUR
+    ADMIN
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+}
+
+Etablissement "1" *-right- "0..*" Groupe : regroupe >
+Groupe "0..*" o-right- "0..*" Profil : membres >
+Etablissement -[hidden]down- RoleMetier
+RoleMetier -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+@enduml

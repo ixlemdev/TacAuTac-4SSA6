@@ -1,0 +1,13 @@
+# À copier dans Backend/config-repo/profil-service.yml (servi par le Config Server)
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/tacautac_profil?serverTimezone=UTC
+    username: ${MYSQL_USER:profil_user}
+    password: ${MYSQL_PASSWORD:profil_pwd}
+
+app:
+  kafka:
+    topic-niveau-estime: niveau.estime.maj
