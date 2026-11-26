@@ -1,6 +1,6 @@
 @startuml classes-notification-service
 !include style.iuml
-title MS6 notification-service : modèle de données (MySQL · tacautac_notification)
+title MS6 notification-service : modèle de données (H2 en mode fichier · tacautac_notification)
 
 package "notification-service" {
   class Notification <<Entity>> {

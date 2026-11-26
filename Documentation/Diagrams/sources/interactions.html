@@ -1,0 +1,143 @@
+<!doctype html>
+<!--
+  Source du schéma interactions.png.
+  Pour régénérer le PNG (2400 x 2240) depuis la racine du dépôt :
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+    --window-size=1200,1120 --force-device-scale-factor=2 --virtual-time-budget=3000 \
+    --screenshot=Documentation/Diagrams/interactions.png \
+    Documentation/Diagrams/sources/interactions.html
+  Pour ajouter un appel ou un topic : modifier les tableaux APPELS et EVENEMENTS plus bas.
+  Police : Inter (installée sur la machine).
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Interactions</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #FFFFFF; }
+  svg { display: block; font-family: "Inter", "Helvetica Neue", Arial, sans-serif; }
+</style>
+</head>
+<body>
+<svg id="d" xmlns="http://www.w3.org/2000/svg" width="1200" height="1120" viewBox="0 0 1200 1120"></svg>
+<script>
+const C = {
+  rouge: "#B00020", rose: "#FBE9EB", texte: "#1F2430", gris: "#4B5563", trait: "#5F6670",
+  bleu: "#2F5BD3", bleuFonce: "#1D4ED8", bleuFond: "#EEF3FD",
+  orange: "#C2410C", orangeFond: "#FFF4EC", bandeGrise: "#F6F7F9", bandeOrange: "#FFF9F5"
+};
+const MONO = '"SF Mono", Menlo, monospace';
+const svg = document.getElementById("d");
+const NS = "http://www.w3.org/2000/svg";
+
+function el(nom, attrs, parent = svg) {
+  const e = document.createElementNS(NS, nom);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  parent.appendChild(e);
+  return e;
+}
+function texte(x, y, s, o = {}) {
+  const t = el("text", {
+    x, y, "font-size": o.taille || 10.5, "font-weight": o.gras ? 700 : (o.poids || 400),
+    fill: o.couleur || C.texte, "text-anchor": o.ancre || "start", "font-family": o.police || "inherit"
+  });
+  t.textContent = s;
+  return t;
+}
+function rect(x, y, w, h, o = {}) {
+  return el("rect", { x, y, width: w, height: h, rx: o.rx ?? 6, fill: o.fond || "#FFFFFF",
+    stroke: o.bord || "none", "stroke-width": o.ep || 1 });
+}
+function fleche(x1, y, x2, couleur, tirets) {
+  el("path", { d: `M${x1},${y} L${x2},${y}`, stroke: couleur, "stroke-width": 1.4, fill: "none",
+    "stroke-dasharray": tirets || "none", "marker-end": `url(#f${couleur.slice(1)})` });
+}
+function boite(x, yc, w, s, fond) {
+  rect(x, yc - 14, w, 28, { fond: fond || "#FFFFFF", bord: C.rouge, ep: 1.3 });
+  texte(x + w / 2, yc + 4, s, { taille: 11, gras: true, ancre: "middle" });
+}
+
+const defs = el("defs", {});
+for (const couleur of [C.bleu, C.orange]) {
+  const m = el("marker", { id: "f" + couleur.slice(1), viewBox: "0 0 10 10", refX: 9, refY: 5,
+    markerWidth: 8, markerHeight: 8, markerUnits: "userSpaceOnUse", orient: "auto" }, defs);
+  el("path", { d: "M0,0 L10,5 L0,10 z", fill: couleur }, m);
+}
+
+// Titre
+el("polygon", { points: "22,22 46,35 22,48", fill: C.rouge });
+texte(58, 44, "Interactions entre microservices de Tac au Tac", { taille: 23, gras: true });
+texte(58, 66, "Synchrone quand l'appelant a besoin de la réponse pour continuer ; asynchrone quand le traitement est long ou que plusieurs services réagissent au même fait.",
+  { taille: 11.5, couleur: C.gris });
+
+// ----- Appels synchrones -----
+const APPELS = [
+  ["MS3 seance", "GET  /api/profils/{id}", "MS1 profil", "consentementVocal, niveauActuel", "503 : aucune voix sans consentement vérifié"],
+  ["MS3 seance", "GET  /api/groupes?formateurId=&membreId=", "MS1 profil", "groupes communs", "503 : réécoute refusée au formateur"],
+  ["MS3 seance", "GET  /api/sujets/{id}", "MS2 contenu", "consigne, durées", "503 « sujet indisponible » ; 404 relayé"],
+  ["MS4 examen", "GET  /api/sujets/tirage", "MS2 contenu", "sujet tiré au sort", "503 : l'épreuve n'est pas créée ; 404 relayé"],
+  ["MS4 examen", "GET  /api/profils/{id}", "MS1 profil", "certification visée", "certification de la requête, sinon 503"],
+  ["MS5 progression", "GET  /api/groupes/{id}/membres", "MS1 profil", "membres du groupe", "200 partiel + « détail indisponible »"],
+  ["MS6 notification", "GET  /api/profils/{id}", "MS1 profil", "email, prenom", "notification créée, e-mail retardé"],
+  ["MS6 notification", "GET  /api/groupes?membreId=", "MS1 profil", "formateurs de l'apprenant", "3 tentatives, puis DLT"],
+  ["MS-IA analyse", "GET  /api/enregistrements/{id}/audio", "MS3 seance", "fichier audio", "3 tentatives, puis DLT et analyse.echouee"],
+  ["MS-IA analyse", "GET  /api/sujets/{id}", "MS2 contenu", "consigne", "critère cohérence marqué « non évalué »"]
+];
+texte(30, 98, "Appels synchrones via Eureka · OpenFeign + Resilience4j (Spring) ou httpx + tenacity (Python) · timeout 3 s, circuit breaker, fallback",
+  { taille: 12.5, gras: true, couleur: C.bleuFonce });
+[["Appelant", 30], ["Endpoint appelé", 203], ["Appelé", 570], ["Donnée reçue", 720], ["Si l'appelé est indisponible", 907]]
+  .forEach(([s, x]) => texte(x, 119, s, { taille: 9.5, gras: true, couleur: C.gris }));
+APPELS.forEach(([appelant, endpoint, appele, donnee, panne], i) => {
+  const yc = 148 + i * 43.5;
+  if (i % 2 === 0) rect(23, yc - 19.5, 1154, 39, { rx: 4, fond: C.bandeGrise });
+  boite(30, yc, 142, appelant, appelant.startsWith("MS-IA") ? C.rose : null);
+  fleche(174, yc, 200, C.bleu);
+  rect(203, yc - 14, 337, 28, { rx: 14, fond: C.bleuFond, bord: C.bleu, ep: 1.2 });
+  texte(371.5, yc + 4, endpoint, { taille: 11, poids: 600, couleur: C.bleuFonce, ancre: "middle", police: MONO })
+    .setAttribute("xml:space", "preserve");
+  fleche(541, yc, 567, C.bleu);
+  boite(570, yc, 127, appele);
+  texte(720, yc + 4, donnee);
+  texte(907, yc + 4, panne, { couleur: C.gris });
+});
+
+// ----- Événements Kafka -----
+const EVENEMENTS = [
+  ["MS3", "audio.recu", ["MS-IA"], ["enregistrementId, seanceId, apprenantId, langue, niveau,", "sujetId, contexte, examenId?, partie?"]],
+  ["MS-IA", "analyse.terminee", ["MS3", "MS4", "MS5", "MS6"], ["analyseId, enregistrementId, apprenantId, langue, niveau,", "contexte, examenId?, partie?, 6 scores, scoreGlobal, niveauEstime"]],
+  ["MS-IA", "analyse.echouee", ["MS3", "MS4", "MS6"], ["analyseId, enregistrementId, contexte, examenId?, raison"]],
+  ["MS-IA", "analyse.validee", ["MS4", "MS5", "MS6"], ["analyseId, enregistrementId, apprenantId, contexte,", "examenId?, scores ajustés, formateurId"]],
+  ["MS4", "examen.termine", ["MS5", "MS6"], ["examenId, apprenantId, langue, certification, noteEstimee,", "niveauAtteint"]],
+  ["MS5", "niveau.estime.maj", ["MS1", "MS6"], ["apprenantId, langue, ancienNiveau, nouveauNiveau"]],
+  ["MS3", "enregistrement.supprime", ["MS-IA", "MS5"], ["enregistrementId, analyseId?, apprenantId"]],
+  ["MS5", "alerte.creee", ["MS6"], ["alerteId, apprenantId, type, message, date"]]
+];
+texte(30, 606, "Événements asynchrones · Kafka (3 tentatives, puis topic *.DLT ; consommateurs idempotents)",
+  { taille: 12.5, gras: true, couleur: C.orange });
+[["Producteur", 30], ["Topic", 203], ["Consommateurs", 480], ["Contenu principal", 832]]
+  .forEach(([s, x]) => texte(x, 627, s, { taille: 9.5, gras: true, couleur: C.gris }));
+EVENEMENTS.forEach(([producteur, topic, consommateurs, contenu], i) => {
+  const yc = 663 + i * 54;
+  if (i % 2 === 0) rect(23, yc - 24.5, 1154, 49, { rx: 4, fond: C.bandeOrange });
+  boite(30, yc, 142, producteur, producteur === "MS-IA" ? C.rose : null);
+  fleche(174, yc, 200, C.orange, "4 3");
+  rect(203, yc - 14, 247, 28, { rx: 14, fond: C.orangeFond, bord: C.orange, ep: 1.2 });
+  texte(326.5, yc + 4, topic, { taille: 11, poids: 600, couleur: C.orange, ancre: "middle", police: MONO });
+  fleche(451, yc, 477, C.orange, "4 3");
+  consommateurs.forEach((s, k) => {
+    const x = 480 + k * 84;
+    rect(x, yc - 13, 74, 26, { rx: 13, fond: s === "MS-IA" ? C.rose : "#FFFFFF", bord: C.rouge, ep: 1.3 });
+    texte(x + 37, yc + 4, s, { taille: 10.5, gras: true, ancre: "middle" });
+  });
+  if (contenu.length === 1) texte(832, yc + 4, contenu[0]);
+  else { texte(832, yc - 3, contenu[0]); texte(832, yc + 12, contenu[1]); }
+});
+
+// Pied de page
+texte(600, 1088, "« ? » = champ présent seulement en contexte EXAMEN ou s'il existe. Aucun appel synchrone ne forme de boucle ; MS2 n'appelle personne. En rose : MS-IA, le service en Python.",
+  { taille: 10, couleur: C.gris, ancre: "middle" });
+texte(600, 1104, "Circuit breaker à 50 % d'échecs sur 10 appels (Resilience4j côté Spring, pybreaker côté Python). Messages Kafka en JSON simple, sans en-tête de type Java : lisibles en Java comme en Python.",
+  { taille: 10, couleur: C.gris, ancre: "middle" });
+</script>
+</body>
+</html>

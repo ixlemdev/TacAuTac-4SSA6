@@ -1,6 +1,6 @@
 @startuml classes-progression-service
 !include style.iuml
-title MS5 progression-service : modèle de données (MySQL · tacautac_progression)
+title MS5 progression-service : modèle de données (H2 en mode fichier · tacautac_progression)
 
 package "progression-service" {
   class SuiviApprenant <<Entity>> {

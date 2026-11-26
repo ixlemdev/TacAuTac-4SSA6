@@ -1,0 +1,72 @@
+@startuml classes-examen-service
+!include style.iuml
+title MS4 examen-service : modèle de données (MySQL · tacautac_examen)
+
+package "examen-service" {
+  class SessionExamen <<Entity>> {
+    - id : Long
+    {field} - apprenantId : String  <i>(réf. MS1)</i>
+    - certification : String
+    - langue : Langue
+    - niveauVise : NiveauCecrl
+    {field} - sujetId : Long  <i>(réf. MS2)</i>
+    - statut : StatutExamen
+    - debutPreparation : LocalDateTime
+    - debutPassage : LocalDateTime
+    - dateFin : LocalDateTime
+    - noteEstimee : Double
+    - niveauAtteint : NiveauCecrl
+  }
+  class PartieEpreuve <<Entity>> {
+    - id : Long
+    - type : TypePartie
+    - ordre : Integer
+    {field} - enregistrementId : Long  <i>(réf. MS3)</i>
+    {field} - analyseId : String  <i>(réf. MS-IA)</i>
+    - score : Double
+    - scoreValide : boolean
+  }
+  class Attestation <<Entity>> {
+    - id : Long
+    - codeVerification : String
+    - niveauAtteint : NiveauCecrl
+    - dateEmission : LocalDate
+    - mentionIndicative : String
+    - statut : StatutAttestation
+  }
+  enum StatutExamen {
+    PREPARATION
+    PASSAGE
+    EN_ANALYSE
+    TERMINE
+    ECHEC_ANALYSE
+    ANNULE
+  }
+  enum TypePartie {
+    MONOLOGUE
+    INTERACTION
+  }
+  enum StatutAttestation {
+    VALIDE
+    REVOQUEE
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+}
+
+SessionExamen "1" *-right- "1..*" PartieEpreuve : comprend >
+SessionExamen "1" -down- "0..1" Attestation : donne lieu à >
+Attestation -[hidden]right- StatutExamen
+StatutExamen -[hidden]right- TypePartie
+TypePartie -[hidden]right- StatutAttestation
+StatutAttestation -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+@enduml

@@ -1,0 +1,95 @@
+@startuml classes-analyse-service
+!include style.iuml
+title MS-IA analyse-service (Python) : documents MongoDB (tacautac_analyse)
+
+package "analyse-service" {
+  class AnalyseVocale <<Document>> {
+    - id : ObjectId
+    {field} - enregistrementId : int  <i>(réf. MS3)</i>
+    {field} - apprenantId : str  <i>(réf. MS1)</i>
+    {field} - sujetId : int  <i>(réf. MS2)</i>
+    - langue : Langue
+    - niveau : NiveauCecrl
+    - contexte : Contexte
+    {field} - examenId : int  <i>(réf. MS4, si EXAMEN)</i>
+    - partie : str
+    - transcription : str
+    - motsParMinute : float
+    - nbPauses : int
+    - nbHesitations : int
+    - statut : StatutAnalyseIA
+    - raisonEchec : str
+    - nbTentatives : int
+    - dateAnalyse : datetime
+  }
+  class Scores <<Embedded>> {
+    - prononciation : float
+    - fluidite : float
+    - intonation : float
+    - lexique : float
+    - grammaire : float
+    - coherence : float
+    - global : float
+    - niveauEstime : NiveauCecrl
+  }
+  class MotAnalyse <<Embedded>> {
+    - mot : str
+    - debutSec : float
+    - finSec : float
+    - scorePrononciation : float
+    - phonemesErrones : list[str]
+  }
+  class ErreurLinguistique <<Embedded>> {
+    {field} - type : str  <i>(GRAMMAIRE, LEXIQUE)</i>
+    - extrait : str
+    - correction : str
+    - explication : str
+  }
+  class Feedback <<Embedded>> {
+    - pointsForts : list[str]
+    - axesDeTravail : list[str]
+    - reformulations : list[str]
+    - texteRedige : str
+  }
+  class ValidationFormateur <<Embedded>> {
+    {field} - formateurId : str  <i>(réf. MS1)</i>
+    - scoresAjustes : Scores
+    - commentaire : str
+    - dateValidation : datetime
+  }
+  enum StatutAnalyseIA {
+    EN_COURS
+    TERMINEE
+    ECHEC
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+  enum Contexte {
+    ENTRAINEMENT
+    EXAMEN
+  }
+}
+
+AnalyseVocale *-- "1" Scores
+AnalyseVocale *-- "0..*" MotAnalyse
+AnalyseVocale *-- "0..*" ErreurLinguistique
+AnalyseVocale *-- "0..1" Feedback
+AnalyseVocale *-- "0..1" ValidationFormateur
+
+note right of AnalyseVocale
+  Un seul document par analyse (modèle Beanie) :
+  tout est embarqué, lu et écrit d'un bloc.
+  Les sous-documents sont des modèles Pydantic.
+end note
+StatutAnalyseIA -[hidden]right- Contexte
+Contexte -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+@enduml
