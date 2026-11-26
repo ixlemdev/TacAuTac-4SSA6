@@ -1,7 +1,7 @@
 # MS1 — profil-service (Tac au Tac)
 
 Profils d'apprentissage, consentement vocal, groupes et établissements.
-Spring Boot 3.3 · Java 17 · MySQL (`tacautac_profil`) · port **8081**.
+Spring Boot 3.5 · Java 17 · MySQL (`tacautac_profil`) · port **8081**.
 
 ## Structure
 
@@ -20,5 +20,5 @@ src/main/java/com/tacautac/profil/
 
 ## Lancer
 
-1. MySQL : exécuter `mysql-init/01-profil.sql`.
-2. `mvn spring-boot:run`
+1. MySQL démarré dans XAMPP : en local, le service se connecte en `root` sans mot de passe. L'utilisateur dédié `profil_user` (utilisé sous Docker) est créé par `Backend/mysql-init/01-profil.sql`.
+2. `./mvnw spring-boot:run`

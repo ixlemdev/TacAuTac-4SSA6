@@ -1,6 +1,6 @@
 @startuml classes-contenu-service
 !include style.iuml
-title MS2 contenu-service : modèle de données (MySQL · tacautac_contenu)
+title MS2 contenu-service : modèle de données (H2 en mode fichier · tacautac_contenu)
 
 package "contenu-service" {
   class Sujet <<Entity>> {

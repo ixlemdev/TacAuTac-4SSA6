@@ -1,0 +1,83 @@
+@startuml classes-seance-service
+!include style.iuml
+title MS3 seance-service : modèle de données (MySQL · tacautac_seance)
+
+package "seance-service" {
+  class SeanceEntrainement <<Entity>> {
+    - id : Long
+    {field} - apprenantId : String  <i>(sub Keycloak, réf. MS1)</i>
+    {field} - sujetId : Long  <i>(réf. MS2)</i>
+    - langue : Langue
+    - niveau : NiveauCecrl
+    - contexte : ContexteSeance
+    {field} - examenId : Long  <i>(réf. MS4, si EXAMEN)</i>
+    - statut : StatutSeance
+    - dateDebut : LocalDateTime
+    - dateFin : LocalDateTime
+  }
+
+  class Enregistrement <<Entity>> {
+    - id : Long
+    - cheminFichier : String
+    - format : FormatAudio
+    - dureeSec : Integer
+    - tailleOctets : Long
+    {field} - partie : PartieEpreuve  <i>(si EXAMEN)</i>
+    - dateDepot : LocalDateTime
+    - statutAnalyse : StatutAnalyse
+    {field} - analyseId : String  <i>(réf. MS-IA)</i>
+    - scoreGlobal : Double
+  }
+
+  enum ContexteSeance {
+    ENTRAINEMENT
+    EXAMEN
+  }
+  enum StatutSeance {
+    EN_COURS
+    EN_ANALYSE
+    ANALYSEE
+    ECHEC_ANALYSE
+    TERMINEE
+  }
+  enum StatutAnalyse {
+    EN_ATTENTE
+    TERMINEE
+    ECHEC
+  }
+  enum FormatAudio {
+    WEBM
+    OGG
+    WAV
+    MP3
+  }
+  enum Langue {
+    FR
+    EN
+  }
+  enum NiveauCecrl {
+    B1
+    B2
+    C1
+    C2
+  }
+  enum PartieEpreuve {
+    MONOLOGUE
+    INTERACTION
+  }
+}
+
+SeanceEntrainement "1" *-right- "0..*" Enregistrement : contient >
+SeanceEntrainement -[hidden]down- ContexteSeance
+ContexteSeance -[hidden]right- StatutSeance
+StatutSeance -[hidden]right- Langue
+Langue -[hidden]right- NiveauCecrl
+Enregistrement -[hidden]down- StatutAnalyse
+StatutAnalyse -[hidden]right- FormatAudio
+FormatAudio -[hidden]right- PartieEpreuve
+
+note top of SeanceEntrainement
+  Les références vers d'autres services sont de simples
+  identifiants : aucune clé étrangère hors de tacautac_seance.
+end note
+@enduml

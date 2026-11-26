@@ -1,0 +1,26 @@
+@startuml etats-seance
+!include style.iuml
+skinparam state {
+  BackgroundColor #FFFFFF
+  BorderColor #B00020
+  FontStyle bold
+  ArrowColor #555555
+}
+title MS3 : cycle de vie d'une séance d'entraînement
+
+[*] --> EN_COURS : POST /api/seances (201)
+EN_COURS --> EN_ANALYSE : dépôt d'un enregistrement\n(publie audio.recu)
+EN_ANALYSE --> ANALYSEE : analyse.terminee\n(tous les enregistrements analysés)
+EN_ANALYSE --> ECHEC_ANALYSE : analyse.echouee
+ECHEC_ANALYSE --> ANALYSEE : analyse.terminee\n(après relance par MS-IA)
+ANALYSEE --> EN_ANALYSE : nouvel enregistrement
+ANALYSEE --> TERMINEE : PATCH /statut {TERMINEE}
+EN_COURS --> TERMINEE : PATCH /statut {TERMINEE}
+ECHEC_ANALYSE --> TERMINEE : PATCH /statut {TERMINEE}
+TERMINEE --> [*]
+
+note right of TERMINEE
+  Séance close : un nouveau dépôt
+  renvoie 409 Conflict.
+end note
+@enduml
