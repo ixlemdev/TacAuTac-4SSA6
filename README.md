@@ -13,14 +13,14 @@ Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est
 ## Membres
 
 | Membre | Microservice | Port | Base | Fiche de conception |
-
-| Nada Matoussi | MS1 `profil-service` | 8081 | MySQL | [Fiche_MS1_profil-service.docx](Documentation/profil-service/Fiche_MS1_profil-service.docx) |
-| Aziz Kthiri | MS2 `contenu-service` | 8082 | MySQL | [Fiche_MS2_contenu-service.docx](Documentation/contenu-service/Fiche_MS2_contenu-service.docx) |
-| Mohamed Islam Athmani | MS3 `seance-service` | 8083 | MySQL | [Fiche_MS3_seance-service.docx](Documentation/seance-service/Fiche_MS3_seance-service.docx) |
-| Adem Chebaane | MS4 `examen-service` | 8084 | MySQL | [Fiche_MS4_examen-service.docx](Documentation/examen-service/Fiche_MS4_examen-service.docx) |
-| Ramez Hafsi | MS5 `progression-service` | 8085 | MySQL | [Fiche_MS5_progression-service.docx](Documentation/progression-service/Fiche_MS5_progression-service.docx) |
-| Oumayma Bahba | MS6 `notification-service` | 8086 | MySQL | [Fiche_MS6_notification-service.docx](Documentation/notification-service/Fiche_MS6_notification-service.docx) |
-| Équipe | MS-IA `analyse-service` (microservice avancé commun) + `moteur-ia` | 8087, 8000 | MongoDB | [Fiche_MS-IA_analyse-service.docx](Documentation/analyse-service/Fiche_MS-IA_analyse-service.docx) |
+| --- | --- | --- | --- | --- |
+| Nada Matoussi | MS1 `profil-service` | 8081 | MySQL | [Fiche_MS1_profil-service.docx](Documentation/services/Fiche_MS1_profil-service.docx) |
+| Aziz Kthiri | MS2 `contenu-service` | 8082 | MySQL | [Fiche_MS2_contenu-service.docx](Documentation/services/Fiche_MS2_contenu-service.docx) |
+| Mohamed Islam Athmani | MS3 `seance-service` | 8083 | MySQL | [Fiche_MS3_seance-service.docx](Documentation/services/Fiche_MS3_seance-service.docx) |
+| Adem Chebaane | MS4 `examen-service` | 8084 | MySQL | [Fiche_MS4_examen-service.docx](Documentation/services/Fiche_MS4_examen-service.docx) |
+| Ramez Hafsi | MS5 `progression-service` | 8085 | MySQL | [Fiche_MS5_progression-service.docx](Documentation/services/Fiche_MS5_progression-service.docx) |
+| Oumayma Bahba | MS6 `notification-service` | 8086 | MySQL | [Fiche_MS6_notification-service.docx](Documentation/services/Fiche_MS6_notification-service.docx) |
+| Équipe | MS-IA `analyse-service` (microservice avancé commun) + `moteur-ia` | 8087, 8000 | MongoDB | [Fiche_MS-IA_analyse-service.docx](Documentation/services/Fiche_MS-IA_analyse-service.docx) |
 
 ## Architecture
 
@@ -49,11 +49,13 @@ TacAuTac-4SSA6/
 ├── Backend/                 un projet Spring Boot par microservice (voir Backend/README.md)
 │   ├── profil-service/  contenu-service/  seance-service/  examen-service/
 │   ├── progression-service/  notification-service/  analyse-service/
+│   └── eureka-server/       annuaire des microservices (port 8761)
 ├── Frontend/                application Angular
 ├── Documentation/
 │   ├── Presentation/        support de la présentation
 │   ├── Diagrams/            diagrammes (PNG) et leurs sources
-│   ├── <service>/           fiche de conception du microservice (Word), un dossier par service
+│   ├── services/            fiches de conception des microservices (Word)
+│   ├── captures/            captures d'écran (dashboard Eureka)
 │   └── Dossier_Technique_TacAuTac.docx 
 └── README.md
 ```
@@ -70,6 +72,40 @@ EUREKA_ENABLED=false ./mvnw spring-boot:run    # démarre le service seul
 
 - Swagger de chaque service : `http://localhost:<port>/swagger-ui.html`
 - Sous Windows : `mvnw.cmd` au lieu de `./mvnw`.
+
+## Découverte des services avec Eureka
+
+Atelier « Implémentation Eureka server », réalisé par l'équipe : Nada Matoussi, Aziz Kthiri, Mohamed Islam Athmani, Adem Chebaane, Ramez Hafsi et Oumayma Bahba.
+
+- **Serveur** : `Backend/eureka-server` (Spring Boot 3.5.6, Spring Cloud 2025.0.0), annoté `@EnableEurekaServer`, port 8761. Il ne s'inscrit pas chez lui-même (`eureka.client.register-with-eureka=false`, `eureka.client.fetch-registry=false`).
+- **Clients** : chaque microservice est annoté `@EnableDiscoveryClient` et a le même bloc dans son `application.properties` :
+
+```properties
+eureka.client.enabled=${EUREKA_ENABLED:true}
+eureka.client.register-with-eureka=true
+eureka.client.fetch-registry=true
+eureka.client.service-url.defaultZone=${EUREKA_URL:http://localhost:8761/eureka}
+eureka.instance.prefer-ip-address=true
+```
+
+![Dashboard Eureka](Documentation/captures/eureka-dashboard.png)
+
+*Dashboard Eureka (http://localhost:8761) : les 7 microservices sont inscrits, et `seance-service` tourne en deux instances (ports 8083 et 8093).*
+
+Pour reproduire, lancer chaque commande dans son propre terminal (MySQL démarré) :
+
+```bash
+# 1. Serveur Eureka, puis ouvrir http://localhost:8761
+cd Backend/eureka-server && ./mvnw spring-boot:run
+# 2. Un microservice (les autres se lancent de la même façon, dans leur dossier)
+cd Backend/seance-service && ./mvnw spring-boot:run
+# 3. Deuxième instance de seance-service sur le port 8093
+cd Backend/seance-service && ./mvnw spring-boot:run -Dspring-boot.run.arguments=--server.port=8093
+# 4. Vérification : les ports 8083 et 8093 doivent être UP
+curl -s http://localhost:8761/eureka/apps/SEANCE-SERVICE | grep -E "<port|<status>"
+```
+
+Une instance apparaît dans le dashboard après 30 à 60 secondes. Sans MySQL, `seance-service` peut tourner sur une base en mémoire : `SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run`.
 
 
 ## Gestion de projet
