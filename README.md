@@ -15,12 +15,12 @@ Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est
 | Membre | Microservice | Port | Base | Fiche de conception |
 | --- | --- | --- | --- | --- |
 | Nada Matoussi | MS1 `profil-service` | 8081 | MySQL | [Fiche_MS1_profil-service.docx](Documentation/services/Fiche_MS1_profil-service.docx) |
-| Aziz Kthiri | MS2 `contenu-service` | 8082 | MySQL | [Fiche_MS2_contenu-service.docx](Documentation/services/Fiche_MS2_contenu-service.docx) |
+| Aziz Kthiri | MS2 `contenu-service` | 8082 | H2 (fichier) | [Fiche_MS2_contenu-service.docx](Documentation/services/Fiche_MS2_contenu-service.docx) |
 | Mohamed Islam Athmani | MS3 `seance-service` | 8083 | MySQL | [Fiche_MS3_seance-service.docx](Documentation/services/Fiche_MS3_seance-service.docx) |
 | Adem Chebaane | MS4 `examen-service` | 8084 | MySQL | [Fiche_MS4_examen-service.docx](Documentation/services/Fiche_MS4_examen-service.docx) |
-| Ramez Hafsi | MS5 `progression-service` | 8085 | MySQL | [Fiche_MS5_progression-service.docx](Documentation/services/Fiche_MS5_progression-service.docx) |
-| Oumayma Bahba | MS6 `notification-service` | 8086 | MySQL | [Fiche_MS6_notification-service.docx](Documentation/services/Fiche_MS6_notification-service.docx) |
-| Équipe | MS-IA `analyse-service` (microservice avancé commun) + `moteur-ia` | 8087, 8000 | MongoDB | [Fiche_MS-IA_analyse-service.docx](Documentation/services/Fiche_MS-IA_analyse-service.docx) |
+| Ramez Hafsi | MS5 `progression-service` | 8085 | H2 (fichier) | [Fiche_MS5_progression-service.docx](Documentation/services/Fiche_MS5_progression-service.docx) |
+| Oumayma Bahba | MS6 `notification-service` | 8086 | H2 (fichier) | [Fiche_MS6_notification-service.docx](Documentation/services/Fiche_MS6_notification-service.docx) |
+| Équipe | MS-IA `analyse-service` (microservice avancé commun, en Python / FastAPI) | 8087 | MongoDB | [Fiche_MS-IA_analyse-service.docx](Documentation/services/Fiche_MS-IA_analyse-service.docx) |
 
 ## Architecture
 
@@ -34,7 +34,8 @@ Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est
 | Config Server | Spring Cloud Config, dossier `Backend/config-repo` | 8888 |
 | Keycloak | realm `tacautac` | 8180 |
 | Kafka | mode KRaft | 9092 |
-| MySQL | un schéma et un utilisateur par service (MS1 à MS6) | 3306 |
+| MySQL | MS1, MS3, MS4 : un schéma et un utilisateur par service | 3306 |
+| H2 (mode fichier) | MS2, MS5, MS6 : base embarquée dans le service, fichiers dans `data/` | |
 | MongoDB | base `tacautac_analyse` (MS-IA) | 27017 |
 | Docker Compose | lancement global | |
 
@@ -46,7 +47,7 @@ Acteurs : apprenant, formateur, administrateur d'établissement. L'apprenant est
 
 ```
 TacAuTac-4SSA6/
-├── Backend/                 un projet Spring Boot par microservice (voir Backend/README.md)
+├── Backend/                 un projet par microservice : Spring Boot, et Python pour MS-IA
 │   ├── profil-service/  contenu-service/  seance-service/  examen-service/
 │   ├── progression-service/  notification-service/  analyse-service/
 │   └── eureka-server/       annuaire des microservices (port 8761)
@@ -62,7 +63,7 @@ TacAuTac-4SSA6/
 
 ## Lancement
 
-Prérequis : Java 17 et MySQL démarré dans XAMPP (port 3306). Maven n'est pas nécessaire : chaque projet contient son Maven Wrapper (`mvnw`).
+Prérequis : Java 17 pour les services Spring Boot, MySQL démarré dans XAMPP (port 3306) pour MS1, MS3 et MS4, Python 3.12 pour MS-IA. Les services en H2 (MS2, MS5, MS6) n'ont besoin d'aucune base à installer. Maven n'est pas nécessaire : chaque projet Spring Boot contient son Maven Wrapper (`mvnw`).
 
 ```bash
 cd Backend/seance-service
