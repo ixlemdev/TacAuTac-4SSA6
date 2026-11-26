@@ -20,5 +20,5 @@ src/main/java/com/tacautac/profil/
 
 ## Lancer
 
-1. MySQL : exécuter `mysql-init/01-profil.sql`.
+1. MySQL démarré dans XAMPP : en local, le service se connecte en `root` sans mot de passe. L'utilisateur dédié `profil_user` (utilisé sous Docker) est créé par `Backend/mysql-init/01-profil.sql`.
 2. `./mvnw spring-boot:run`
