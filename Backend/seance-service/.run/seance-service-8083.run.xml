@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="seance-service (8083, h2)" type="Application" factoryName="Application">
+    <envs>
+      <env name="SPRING_PROFILES_ACTIVE" value="h2" />
+    </envs>
+    <option name="MAIN_CLASS_NAME" value="com.tacautac.seance.SeanceServiceApplication" />
+    <module name="seance-service" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
