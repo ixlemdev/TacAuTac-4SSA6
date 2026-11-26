@@ -79,7 +79,7 @@ EUREKA_ENABLED=false ./mvnw spring-boot:run    # démarre le service seul
 Atelier « Implémentation Eureka server », réalisé par l'équipe : Nada Matoussi, Aziz Kthiri, Mohamed Islam Athmani, Adem Chebaane, Ramez Hafsi et Oumayma Bahba.
 
 - **Serveur** : `Backend/eureka-server` (Spring Boot 3.5.6, Spring Cloud 2025.0.0), annoté `@EnableEurekaServer`, port 8761. Il ne s'inscrit pas chez lui-même (`eureka.client.register-with-eureka=false`, `eureka.client.fetch-registry=false`).
-- **Clients** : chaque microservice est annoté `@EnableDiscoveryClient` et a le même bloc dans son `application.properties` :
+- **Clients** : chaque microservice Spring Boot est annoté `@EnableDiscoveryClient` et a le même bloc dans son `application.properties` (le MS-IA, en Python, s'inscrit avec `py-eureka-client` au démarrage de FastAPI, voir `Backend/analyse-service/app/main.py`) :
 
 ```properties
 eureka.client.enabled=${EUREKA_ENABLED:true}
@@ -106,7 +106,7 @@ cd Backend/seance-service && ./mvnw spring-boot:run -Dspring-boot.run.arguments=
 curl -s http://localhost:8761/eureka/apps/SEANCE-SERVICE | grep -E "<port|<status>"
 ```
 
-Une instance apparaît dans le dashboard après 30 à 60 secondes. Sans MySQL, `seance-service` peut tourner sur une base en mémoire : `SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run`.
+Une instance apparaît dans le dashboard après 30 à 60 secondes. Sans MySQL, `seance-service` peut tourner sur une base en mémoire : `SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run`. Le MS-IA se lance avec `uvicorn app.main:app --host 0.0.0.0 --port 8087` (voir `Backend/analyse-service/README.md`).
 
 
 ## Gestion de projet

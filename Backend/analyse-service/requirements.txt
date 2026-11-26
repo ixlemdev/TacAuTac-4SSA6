@@ -1,0 +1,4 @@
+# Bibliotheques du MS-IA analyse-service (Python 3.12)
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+py-eureka-client==0.13.3
